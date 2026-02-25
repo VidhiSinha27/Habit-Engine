@@ -104,17 +104,7 @@ function App() {
       setPredLoading(false);
     }
   };
-
-  // Auto-predict when inputs change
-  useEffect(() => {
-    if (trainResult) {
-      const timer = setTimeout(() => {
-        predict();
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [dailyInput, trainResult]);
-
+  
   return (
     <div className="container">
       <header className="header">

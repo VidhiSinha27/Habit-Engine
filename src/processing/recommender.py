@@ -55,8 +55,15 @@ class RecommendationEngine:
         # 3. LOW ADHERENCE (< 40%) - Reassurance & Reset
         elif adherence_prob < 0.4:
             rec_type = RecommendationType.ANCHORING
-            title = "Everything okay?"
-            body = "We noticed you've been away for a bit. Don't worry—failures are just data points on the road to success. We can get back on the wagon today."
+            missed_days = recent_features.get('consecutive_misses', 0)
+            
+            if missed_days <= 7:
+                title = "Don't break the chain"
+                body = "You missed a few days, but it happens. The key is to get back to it immediately to keep your habit strong."
+            else:
+                title = "Everything okay?"
+                body = "We noticed you've been away for a bit. Don't worry—failures are just data points on the road to success. We can get back on the wagon today."
+            
             action = "Start small: Just do 5 minutes of movement to break the seal."
             reasons.append(f"Low adherence probability ({adherence_prob:.1%}).")
             reasons.append("Focus is on re-establishing the habit loop, not intensity.")
