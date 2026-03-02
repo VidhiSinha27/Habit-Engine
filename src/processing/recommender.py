@@ -13,7 +13,8 @@ class RecommendationEngine:
         adherence_prob: float, 
         burnout_risk: float, 
         is_anomaly: bool,
-        recent_features: Dict[str, Any]
+        recent_features: Dict[str, Any],
+        anomaly_context: str = None
     ) -> EngineResponse:
         
         reasons = []
@@ -39,9 +40,10 @@ class RecommendationEngine:
         elif is_anomaly:
             rec_type = RecommendationType.RECOVERY
             title = "Check-in time"
-            body = "We noticed some unusual patterns today. Everything okay?"
+            context_str = f" ({anomaly_context})" if anomaly_context else ""
+            body = f"We noticed some unusual patterns today. Everything okay?"
             action = "Log a quick mood check-in instead of a workout."
-            reasons.append("Behavioral anomaly detected (isolation forest).")
+            reasons.append(f"Behavioral anomaly detected{context_str}.")
 
         # 2. BURNOUT RISK CHECK (High Hazard Score)
         elif burnout_risk > 1.2: # Threshold relative to baseline 1.0

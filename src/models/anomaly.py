@@ -59,10 +59,39 @@ class AnomalyDetector:
             pred = self.model.predict(X_scaled)[0] # 1 for normal, -1 for outlier
             score = self.model.decision_function(X_scaled)[0] 
             
-            return {
+            result = {
                 "is_anomaly": bool(pred == -1),
-                "severity_score": float(score) # Lower score = More abnormal
+                "severity_score": float(score), # Lower score = More abnormal
+                "context": None
             }
+
+            if result["is_anomaly"]:
+                # Explainability: Which feature deviated the most?
+                # X_scaled contains z-scores relative to training mean
+                import numpy as np
+                z_scores = X_scaled[0] 
+                max_idx = np.argmax(np.abs(z_scores))
+                feature_key = self.feature_cols[max_idx]
+                z_val = z_scores[max_idx]
+
+                # Map to human readable
+                name_map = {
+                    'total_steps': 'Step Count',
+                    'sleep_duration_minutes': 'Sleep Duration',
+                    'sleep_variance_7d': 'Sleep Stability'
+                }
+                feat_name = name_map.get(feature_key, feature_key)
+                
+                # Determine direction
+                if feature_key == 'sleep_variance_7d':
+                     # High variance is usually the anomaly of interest (instability)
+                     direction = "Unstable" if z_val > 0 else "Unusually Stable"
+                else:
+                     direction = "High" if z_val > 0 else "Low"
+                
+                result["context"] = f"{direction} {feat_name}"
+
+            return result
         except Exception as e:
             print(f"ANOMALY CHECK ERROR: {e}")
             return {"error": str(e), "is_anomaly": False, "severity_score": 0.0}

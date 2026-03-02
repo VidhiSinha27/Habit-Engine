@@ -248,6 +248,7 @@ def predict(input: DailyInput):
         anomaly_res = state.anomaly_detector.check_anomaly(today_features.iloc[0])
         print(f"DEBUG: Anomaly check for {input.steps} steps: {anomaly_res}")
         is_anomaly = anomaly_res.get('is_anomaly', False)
+        anomaly_context = anomaly_res.get('context', None)
         
         # Recommendation
         rec = state.recommender.generate_recommendation(
@@ -256,7 +257,8 @@ def predict(input: DailyInput):
             adherence_prob=adh_prob,
             burnout_risk=burnout_risk,
             is_anomaly=is_anomaly,
-            recent_features=feature_row
+            recent_features=feature_row,
+            anomaly_context=anomaly_context
         )
         
         return rec
