@@ -63,5 +63,6 @@ class AnomalyDetector:
                 "is_anomaly": bool(pred == -1),
                 "severity_score": float(score) # Lower score = More abnormal
             }
-        except KeyError as e:
-            return {"error": f"Missing columns: {e}"}
+        except Exception as e:
+            print(f"ANOMALY CHECK ERROR: {e}")
+            return {"error": str(e), "is_anomaly": False, "severity_score": 0.0}

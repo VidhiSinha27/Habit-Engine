@@ -27,10 +27,10 @@ class RecommendationEngine:
         # 0. SEVERE SLEEP DEPRIVATION (Hard Rule)
         # Check raw sleep minutes from the current day's feature row
         current_sleep = recent_features.get('sleep_duration_minutes', 480) # default 8h if missing
-        if current_sleep < 180: # Less than 3 hours
+        if current_sleep < 300: # Less than 5 hours
             rec_type = RecommendationType.RECOVERY
             title = "Sleep First, Train Later"
-            body = "You got less than 3 hours of sleep. Training now is counter-productive and dangerous."
+            body = "You got less than 5 hours of sleep. Training now is counter-productive and dangerous."
             action = "Skip the workout. Go get a nap or go to bed early tonight."
             reasons.append(f"Severe sleep deprivation detected ({current_sleep/60:.1f} hours).")
             reasons.append("Cognitive and physical recovery is severely compromised.")

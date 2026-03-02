@@ -15,6 +15,7 @@ import uvicorn
 from src.processing.features import FeatureEngineer
 from src.models.adherence import AdherenceModel
 from src.models.burnout import BurnoutRiskModel
+from src.models.anomaly import AnomalyDetector
 from src.processing.recommender import RecommendationEngine
 from src.domain.schemas import DailyBehavior
 from src.domain.api_schemas import (
@@ -43,6 +44,7 @@ class EngineState:
         self.engineer = FeatureEngineer()
         self.adherence_model = AdherenceModel()
         self.burnout_model = BurnoutRiskModel()
+        self.anomaly_detector = AnomalyDetector()
         self.recommender = RecommendationEngine()
         
         self.is_trained = False
@@ -116,6 +118,9 @@ def simulate_and_train(params: SimulationParams):
             c_index = metrics_burn.get('concordance', 0.0)
         except:
              c_index = 0.0
+             
+        # Anomaly Detection
+        state.anomaly_detector.train(state.df_features)
         
         state.is_trained = True
         
@@ -159,6 +164,9 @@ def train_custom(request: HistoryTrainRequest):
             c_index = metrics_burn.get('concordance', 0.0)
         except:
              c_index = 0.0
+             
+        # Anomaly Detection
+        state.anomaly_detector.train(state.df_features)
         
         state.is_trained = True
         
@@ -236,13 +244,18 @@ def predict(input: DailyInput):
         }
         burnout_risk = state.burnout_model.predict_current_risk(risk_input)
         
+        # Anomaly Check
+        anomaly_res = state.anomaly_detector.check_anomaly(today_features.iloc[0])
+        print(f"DEBUG: Anomaly check for {input.steps} steps: {anomaly_res}")
+        is_anomaly = anomaly_res.get('is_anomaly', False)
+        
         # Recommendation
         rec = state.recommender.generate_recommendation(
             user_id="demo_user",
             date_str=str(today),
             adherence_prob=adh_prob,
             burnout_risk=burnout_risk,
-            is_anomaly=False,
+            is_anomaly=is_anomaly,
             recent_features=feature_row
         )
         
